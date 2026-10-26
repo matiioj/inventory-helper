@@ -29,8 +29,8 @@ Detection policy (agreed with the user): only fill a column if detection is reli
 - Camara: `Service = 'usbvideo'`. A webcam mic (a `usbaudio` device with the same VID/PID) is noted in Observaciones as `CAMARA CON MICROFONO`.
 - Disks use the `MSFT_PhysicalDisk` CIM class directly (numeric `MediaType`/`BusType`) instead of `Get-PhysicalDisk`, avoiding the slow Storage module load.
 
-`Persona` comes from `persona.txt` (first line) next to the script; it is never prompted.
+`Persona` comes from `persona.txt` (first line) next to the script (also accepts `persona*.txt`, e.g. `persona.txt.txt`; handles UTF-8/UTF-16/ANSI and BOM); it is never prompted. If empty, the final message says why.
 
 ## Output
 
-Written to `Inventario/` next to the script: `<COMPUTERNAME>.txt` (readable block + row) and `TODAS_LAS_FILAS.txt` (one row per computer name, replaced on re-run).
+Written to `Inventario/` next to the script: `<COMPUTERNAME>.txt` (readable block + row). There is no accumulated file.

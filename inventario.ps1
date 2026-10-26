@@ -47,9 +47,27 @@ Write-Host ""
 
 # ---------- PERSONA (se lee de persona.txt junto al script, no se pregunta) ----------
 $persona = ''
-$personaTxt = Join-Path $PSScriptRoot 'persona.txt'
-if (Test-Path $personaTxt) {
-    $persona = Limpiar ((Get-Content $personaTxt | Where-Object { $_.Trim() } | Select-Object -First 1) -replace "`t", ' ')
+$personaMotivo = ''
+# $PSScriptRoot puede venir vacio segun como se lance; se cae a la ruta del script y luego a la carpeta actual
+$base = $PSScriptRoot
+if (-not $base) { $base = Split-Path -Parent $MyInvocation.MyCommand.Path }
+if (-not $base) { $base = (Get-Location).Path }
+# acepta persona.txt, Persona.TXT y el clasico persona.txt.txt (extensiones ocultas en el Explorador)
+$personaTxt = Get-ChildItem -LiteralPath $base -File -Filter 'persona*.txt' | Select-Object -First 1
+if (-not $personaTxt) {
+    $personaMotivo = "no se encontro persona.txt en $base"
+} else {
+    $bytes = [IO.File]::ReadAllBytes($personaTxt.FullName)
+    if ($bytes.Length -ge 2 -and (($bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) -or ($bytes[0] -eq 0xFE -and $bytes[1] -eq 0xFF))) {
+        $texto = [Text.Encoding]::Unicode.GetString($bytes)                       # UTF-16 (Notepad "Unicode")
+        if ($bytes[0] -eq 0xFE) { $texto = [Text.Encoding]::BigEndianUnicode.GetString($bytes) }
+    } else {
+        try { $texto = (New-Object Text.UTF8Encoding($false, $true)).GetString($bytes) }   # UTF-8 estricto
+        catch { $texto = [Text.Encoding]::Default.GetString($bytes) }                      # si no, ANSI
+    }
+    $primera = $texto.TrimStart([char]0xFEFF) -split '\r?\n' | Where-Object { $_.Trim() } | Select-Object -First 1
+    if ($primera) { $persona = Limpiar ($primera -replace "`t", ' ') }
+    else { $personaMotivo = "$($personaTxt.Name) esta vacio" }
 }
 
 # ---------- MOTHERBOARD ----------
@@ -333,17 +351,9 @@ $fila
 
 Set-Content -Path (Join-Path $outDir "$pc.txt") -Value $bloque -Encoding UTF8
 
-# Archivo acumulado: una fila por PC (si ya estaba, se reemplaza)
-$todas = Join-Path $outDir 'TODAS_LAS_FILAS.txt'
-$prev = @()
-if (Test-Path $todas) {
-    $prev = @(Get-Content $todas | Where-Object { $_ -and -not $_.StartsWith("$pc`t") })
-}
-Set-Content -Path $todas -Value ($prev + $fila) -Encoding UTF8
-
 Write-Host ""
 Write-Host "    GUARDADO " -NoNewline -ForegroundColor Black -BackgroundColor Green
 Write-Host "  $outDir\$pc.txt" -ForegroundColor Gray
-if (-not $persona) { Write-Host "    (sin persona.txt: la columna Persona queda vacia)" -ForegroundColor DarkGray }
+if (-not $persona) { Write-Host "    (Persona vacia: $personaMotivo)" -ForegroundColor DarkYellow }
 Write-Host ""
 Write-Host "    Presione una tecla para cerrar..." -ForegroundColor DarkGray

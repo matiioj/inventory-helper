@@ -9,14 +9,14 @@ Execute the .bat to start analyzing and writing the components of your PC and be
 2. Ejecutar `INVENTARIO.bat`. Revisar lo detectado y completar **Sector** y **Observaciones** (Enter para dejarlos vacios).
 3. El resultado queda en la carpeta `Inventario\` que se crea junto al script:
    - `Inventario\<NOMBRE-PC>.txt`: bloque legible + la fila para pegar en la planilla.
-   - `Inventario\TODAS_LAS_FILAS.txt`: solo la fila de esa PC.
 4. Despues, copiar la fila (la linea que empieza con el nombre de la PC) y pegarla en la celda USUARIO de la planilla.
 
 ### persona.txt (opcional)
 
 - Va en la **misma carpeta que `inventario.ps1`**, no en una subcarpeta. Si el script esta en la raiz del USB, el archivo tambien va en la raiz.
 - Se lee solo la **primera linea**, con el nombre de quien hace el inventario.
-- Si no existe, no se pregunta nada: la columna **Persona** queda vacia.
+- Tambien se acepta `persona.txt.txt` (pasa cuando el Explorador oculta las extensiones). Cualquier codificacion sirve.
+- Si no existe, no se pregunta nada: la columna **Persona** queda vacia y al final el script avisa el motivo y la carpeta donde busco.
 - Hay que copiarlo a la PC junto con el script. Si no, en esa PC la columna queda vacia.
 
 ### Que se detecta
@@ -33,7 +33,7 @@ Proyector, parlantes, mouse, teclado, UPS y microfono no se pueden detectar de f
 - **Camara y microfono:** la nota de microfono sale solo si la webcam tiene un dispositivo de audio propio en el mismo hardware. No depende del nombre.
 - **Bateria:** Windows a veces no informa el estado de la bateria sin permisos de administrador. En ese caso la linea no aparece.
 - **Sector y Observaciones:** los tabs que se escriban se eliminan automaticamente para no correr las columnas de la fila. Lo que se escribe en Observaciones se agrega despues de la nota automatica, separado con ` - `.
-- **Archivos por PC:** cada PC tiene su propio `Inventario\`. `TODAS_LAS_FILAS.txt` no junta varias PCs: solo guarda la fila de la PC donde se corrio. Correrlo dos veces en la misma PC reemplaza su fila, no la duplica.
+- **Archivos por PC:** cada PC tiene su propio `Inventario\`. Correrlo dos veces en la misma PC reemplaza su `.txt`.
 - **Nombre de la PC:** los archivos usan el nombre de la PC (`COMPUTERNAME`). Dos PCs con el mismo nombre se pisan entre si.
 - **Ejecucion:** el `.bat` ya usa `-ExecutionPolicy Bypass`. Si se corre `inventario.ps1` directamente con PowerShell, puede fallar por la politica de ejecucion.
 
